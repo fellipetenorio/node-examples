@@ -1,6 +1,10 @@
 const fs = require('fs');
 const express = require('express');
 const hbs = require('hbs');
+
+// to work with heroky
+const port = process.env.PORT || 3000;
+
 // nodemon server.js -e js,hbs
 var app = express();
 
@@ -40,6 +44,6 @@ app.get('/bad', (req, res) => {
     res.send({errorMessage: 'unable do handle request'});
 });
 
-app.listen(3000, () => {
-    console.log('Server is up at port 3000');
+app.listen(port, () => {
+    console.log(`Server is up at port ${port}`);
 });
