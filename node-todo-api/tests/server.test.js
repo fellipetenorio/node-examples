@@ -1,5 +1,6 @@
 const expect = require('expect');
 const request = require('supertest');
+var {ObjectID} = require('mongodb');
 
 const {app} = require('./../server/server');
 const {Todo} = require('./../server/models/todo');
@@ -8,12 +9,47 @@ const todosDummy = [
     {text: 'First test todo'},
     {text: 'Second test todo'},
 ];
+var todosDummyDoc;
 
 beforeEach(done => {
     Todo.remove({})
         .then(() => {
-            return Todo.insertMany(todosDummy);
+            return Todo.insertMany(todosDummy).then(docs => todosDummyDoc = docs);
         }).then(() => done());
+});
+
+describe('GET /todos/:id', () => {
+    it('should find todo', done => {
+        request(app)
+            .get(`/todos/${todosDummyDoc[0]._id.toHexString()}`)
+            .expect(200)
+            .expect(res => {
+                expect(res.body.todo.text).toBe(todosDummy[0].text);
+            })
+            .end(done);
+    });
+
+    it('should find any', done => {
+        var validButNonUsedId = new ObjectID().toHexString();
+        request(app)
+            .get(`/todos/${validButNonUsedId}`)
+            .expect(200)
+            .expect(res => {
+                expect(res.body.todo).toBeNull();
+            })
+            .end(done);
+    });
+    
+    it('should error on invalid ObjectId', done => {
+        var validButNonUsedId = '5be872d137d4611d56656d4d1';
+        request(app)
+            .get(`/todos/${validButNonUsedId}`)
+            .expect(400)
+            .expect(res => {
+                expect(res.body.message).toBe('invalid object id');
+            })
+            .end(done);
+    });
 });
 
 describe('GET /todos', () => {

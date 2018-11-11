@@ -10,6 +10,7 @@ var app = express();
 app.use(bodyParser.json());
 
 app.get('/todos', (req, res) => {
+    console.log('list all todos');
     Todo.find()
     .then(todos => {
         res.send({
@@ -35,8 +36,9 @@ app.post('/todos', (req, res) => {
 // GET user by id
 app.get('/todos/:id', (req, res) => {
     var todoId = req.params.id;
+    // should not acc
     if(!ObjectID.isValid(todoId)) {
-        res.status(400).send({
+        return res.status(400).send({
             message: 'invalid object id'
         });
     }
