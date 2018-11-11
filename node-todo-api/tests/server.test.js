@@ -68,6 +68,30 @@ describe('PATH /todos/:id', () => {
             });
     });
 
+    it('should update only the completed and completedAt', done => {
+        var mId = todosDummyDoc[0]._id.toHexString();
+        var updatedTodo = {
+            completed: true
+        }
+        request(app)
+            .patch(`/todos/${mId}`)
+            .send(updatedTodo)
+            .expect(200)
+            .expect(res => {
+                expect(res.body.todo._id).toBe(todosDummyDoc[0]._id.toHexString());
+            })
+            .end((err, res) => {
+                if(err) return done(err);
+                // should not exist in database now
+                Todo.findById(mId).then(obj => {
+                    expect(obj.text).toBe(todosDummy[0].text);
+                    expect(obj.completed).toBe(true);
+                    expect(obj.completedAt).toBeGreaterThan(0);
+                    done();
+                }).catch(e => done(e));
+            });
+    });
+
     it('should error on invalid id', done => {
         var invalidId = '123';
         request(app)
