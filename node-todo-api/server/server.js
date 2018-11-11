@@ -1,5 +1,6 @@
-var express = require('express');
-var bodyParser = require('body-parser');
+const _ = require('lodash');
+const express = require('express');
+const bodyParser = require('body-parser');
 
 var {ObjectID} = require('mongodb');
 var {mongoose} = require( './db/mongoose');
@@ -8,6 +9,31 @@ var {User} = require('./models/user');
 
 var app = express();
 app.use(bodyParser.json());
+
+// patch todo
+app.patch('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    var body = _.pick(req.body, ['text', 'completed']);
+    
+    if(!ObjectID.isValid(id))
+        return res.status(400).send({message: 'invalid id'});
+
+        
+    if(!_.isUndefined(body.completed) && !_.isBoolean(body.completed))
+        return res.status(400).send({message: 'completed attribute must be a boolean'});
+    
+    if(body.completed)
+        body.completedAt = new Date().getTime();
+    
+    Todo.findOneAndUpdate(id, {$set: body}, {new:true}).then(todo => {
+        res.send({todo});
+    }, err => {
+        console.log(err);
+        res.status(400).send({
+            message: 'problem to update'
+        });
+    });
+});
 
 // delete
 app.delete('/todos/:id', (req, res) => {
