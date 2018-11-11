@@ -18,6 +18,41 @@ beforeEach(done => {
         }).then(() => done());
 });
 
+describe('DELETE /todos/:id', () => {
+    it('should delete todo', done => {
+        request(app)
+            .delete(`/todos/${todosDummyDoc[0]._id.toHexString()}`)
+            .expect(200)
+            .expect(res => {
+                expect(res.body.todo._id).toBe(todosDummyDoc[0]._id.toHexString());
+            })
+            .end(done);
+    });
+
+    it('should be null for non existent todo, but valid id', done => {
+        var validButNonUsedId = new ObjectID().toHexString();
+        request(app)
+        .delete(`/todos/${validButNonUsedId}`)
+        .expect(200)
+        .expect(res => {
+            expect(res.body.todo).toBe(null);
+        })
+        .end(done);
+    });
+
+    it('should error on invalid id', done => {
+        var invalidId = '123';
+        request(app)
+        .delete(`/todos/${invalidId}`)
+        .expect(400)
+        .expect(res => {
+            expect(res.body.message).toBe('invalid id');
+            expect(res.body.todo).toBe(undefined);
+        })
+        .end(done);
+    });
+});
+
 describe('GET /todos/:id', () => {
     it('should find todo', done => {
         request(app)

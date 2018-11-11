@@ -9,6 +9,20 @@ var {User} = require('./models/user');
 var app = express();
 app.use(bodyParser.json());
 
+// delete
+app.delete('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    if(!ObjectID.isValid(id))
+        return res.status(400).send({
+            message: 'invalid id'
+        });
+    
+    return Todo.findByIdAndDelete(id)
+        .then(todo => res.send({todo}), err => {
+            res.status(500).send(err);
+        })
+});
+
 app.get('/todos', (req, res) => {
     console.log('list all todos');
     Todo.find()
