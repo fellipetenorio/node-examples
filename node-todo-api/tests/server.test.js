@@ -20,13 +20,21 @@ beforeEach(done => {
 
 describe('DELETE /todos/:id', () => {
     it('should delete todo', done => {
+        var mId = todosDummyDoc[0]._id.toHexString();
         request(app)
-            .delete(`/todos/${todosDummyDoc[0]._id.toHexString()}`)
+            .delete(`/todos/${mId}`)
             .expect(200)
             .expect(res => {
                 expect(res.body.todo._id).toBe(todosDummyDoc[0]._id.toHexString());
             })
-            .end(done);
+            .end((err, res) => {
+                if(err) return done(err);
+                // should not exist in database now
+                Todo.findById(mId).then(obj => {
+                    expect(obj).toBe(null);
+                    done();
+                }).catch(e => done(e));
+            });
     });
 
     it('should be null for non existent todo, but valid id', done => {
