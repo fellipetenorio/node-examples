@@ -4,14 +4,53 @@ var {ObjectID} = require('mongodb');
 
 const {app} = require('./../server/server');
 const {Todo} = require('./../server/models/todo');
-const {todosDummy, populateTodos} = require('./seed/seed');
+const {todosDummy, populateTodos, usersDummy, populateUsers} = require('./seed/seed');
 var todosDummyDoc;
+var usersDummyDoc;
 
+beforeEach(done => {
+    populateUsers(done).then(docs => {
+        usersDummyDoc = docs;
+        done();
+    });
+});
 beforeEach(done => {
     populateTodos(done).then(docs => {
         todosDummyDoc = docs;
         done();
     });
+});
+
+describe('GET /users/me', () => {
+    it('should return user if authenticated', done => {
+        request(app)
+            .get('/users/me')
+            .set('x-auth', usersDummy[0].tokens[0].token)
+            .expect(200)
+            .expect(res => {
+                expect(res.body._id).toBe(usersDummy[0]._id.toHexString());
+                expect(res.body.email).toBe(usersDummy[0].email);
+            }).end(done);
+    });
+
+    it('should return 401 unauthenticated (invalid x-auth header)', done => {
+        request(app)
+            .get('/users/me')
+            .set('x-auth', 'my invalid x-auth')
+            .expect(401)
+            .expect(res => {
+                expect(res.body).toEqual({});
+            }).end(done);
+    })
+
+    it('should return 400 bad request (without x-auth header)', done => {
+        request(app)
+            .get('/users/me')
+            .expect(400)
+            .expect(res => {
+                expect(res.body).toEqual({});
+            }).end(done);
+    })
 });
 
 describe('PATH /todos/:id', () => {
