@@ -32,7 +32,6 @@ app.get('/users/me', authenticate, (req, res) => {
 */
 app.post('/users', (req, res) => {
     var userData = _.pick(req.body, ['email', 'password']);
-    console.log(userData);
     var user = new User(userData);
     
     user.save(user).then(user => {
