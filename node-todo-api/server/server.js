@@ -12,6 +12,7 @@ if (env === 'development') {
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
+const {authenticate} = require('./middleware/authenticate');
 
 var { ObjectID } = require('mongodb');
 var { mongoose } = require('./db/mongoose');
@@ -21,16 +22,9 @@ var { User } = require('./models/user');
 var app = express();
 app.use(bodyParser.json());
 
-app.get('/users/me', (req, res) => {
-    var token = req.header('x-auth');
-    if(!token)
-        return res.status(400).send();
-    User.findByToken(token).then(user => {
-        if (!user)
-            return Promise.reject();
-            
-        res.send(user)
-    }).catch(err => res.status(401).send());
+// only call the data from req
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
 });
 
 /*
