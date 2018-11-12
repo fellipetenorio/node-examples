@@ -4,18 +4,14 @@ var {ObjectID} = require('mongodb');
 
 const {app} = require('./../server/server');
 const {Todo} = require('./../server/models/todo');
-
-const todosDummy = [
-    {text: 'First test todo'},
-    {text: 'Second test todo'},
-];
+const {todosDummy, populateTodos} = require('./seed/seed');
 var todosDummyDoc;
 
 beforeEach(done => {
-    Todo.remove({})
-        .then(() => {
-            return Todo.insertMany(todosDummy).then(docs => todosDummyDoc = docs);
-        }).then(() => done());
+    populateTodos(done).then(docs => {
+        todosDummyDoc = docs;
+        done();
+    });
 });
 
 describe('PATH /todos/:id', () => {
