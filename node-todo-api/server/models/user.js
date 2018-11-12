@@ -39,6 +39,7 @@ UserSchema.methods.toJSON = function() {
     return _.pick(userObject, ['_id', 'email']);
 };
 
+// create new instance method to create token to the user
 UserSchema.methods.generateAuthToken = function() {
     var user = this;
     var access = 'auth';
@@ -48,6 +49,23 @@ UserSchema.methods.generateAuthToken = function() {
     return user.save().then(res => {
         console.log('after', user);
         return token
+    })
+}
+
+// create a static model method to search the user by token
+UserSchema.statics.findByToken = function(token) {
+    var User = this;
+    var decoded;
+    try {
+        decoded = jwt.verify(token, 'abc123');
+    } catch (e) {
+        return Promise.reject();
+    }
+
+    return User.findOne({
+        _id: decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
     })
 }
 

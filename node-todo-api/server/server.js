@@ -21,7 +21,17 @@ var { User } = require('./models/user');
 var app = express();
 app.use(bodyParser.json());
 
-// app.get('/)
+app.get('/users/me', (req, res) => {
+    var token = req.header('x-auth');
+    if(!token)
+        return res.status(400).send();
+    User.findByToken(token).then(user => {
+        if (!user)
+            return Promise.reject();
+            
+        res.send(user)
+    }).catch(err => res.status(401).send());
+});
 
 /*
     USER
