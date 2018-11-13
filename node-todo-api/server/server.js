@@ -22,6 +22,22 @@ var { User } = require('./models/user');
 var app = express();
 app.use(bodyParser.json());
 
+// POST /users/login {email, password}
+app.post('/users/login', (req, res) => {
+    var {email, password} = req.body;
+
+    if (_.isUndefined(email) || _.isUndefined(password))
+        return res.status(400).send({ message: 'missing email or password' });
+
+    User.findByCredentials(email, password).then(user => {
+        return user.generateAuthToken().then(token => {
+            res.header('x-auth', token).send(user);
+        });
+    }).catch(e => {
+        res.status(401).send(e);
+    });
+});
+
 // only call the data from req
 app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user);

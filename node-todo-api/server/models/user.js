@@ -49,6 +49,22 @@ UserSchema.methods.generateAuthToken = function() {
     return user.save().then(res => token);
 }
 
+UserSchema.statics.findByCredentials = function(email, password) {
+    var User = this;
+    return User.findOne({email}).then(user => {
+        if(!user) return Promise.reject('user not found');
+
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, user.password, (err, res) => {
+                if(err) return reject(err);
+                if(!res) return reject('invalid user or password');
+                // generate token
+                resolve(user);
+            })
+        });
+    });
+}
+
 // create a static model method to search the user by token
 UserSchema.statics.findByToken = function(token) {
     var User = this;
