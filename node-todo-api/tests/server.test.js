@@ -23,6 +23,48 @@ beforeEach(done => {
     });
 });
 
+describe('DELETE /users/me/token', () => {
+    it('should remove token', done => {
+        var token = usersDummy[0].tokens[0].token;
+        request(app)
+            .delete('/users/me/token')
+            .set('x-auth', token)
+            .expect(200)
+            .expect(rest => {
+                User.findById(usersDummy[0]).then(user => {
+                    expect(user.tokens.length).toBe(0);
+                }).catch(e => done(e));
+            })
+            .end(done);
+    });
+    it('should return bad request for empty token', done => {
+        var token = usersDummy[0].tokens[0].token;
+        request(app)
+            .delete('/users/me/token')
+            // .set('x-auth', token)
+            .expect(400)
+            .expect(rest => {
+                User.findById(usersDummy[0]).then(user => {
+                    expect(user.tokens.length).toBe(1);
+                }).catch(e => done(e));
+            })
+            .end(done);
+    });
+    it('should return unauthorized for invalid token', done => {
+        var token = usersDummy[0].tokens[0].token+'1';
+        request(app)
+            .delete('/users/me/token')
+            .set('x-auth', token)
+            .expect(401)
+            .expect(rest => {
+                User.findById(usersDummy[0]).then(user => {
+                    expect(user.tokens.length).toBe(1);
+                }).catch(e => done(e));
+            })
+            .end(done);
+    });
+});
+
 describe('POST /users/login', () => {
     it('should login user and return x-auth', done => {
         var body = _.pick(usersDummy[1], ['email', 'password']);

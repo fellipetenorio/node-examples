@@ -22,7 +22,19 @@ var { User } = require('./models/user');
 var app = express();
 app.use(bodyParser.json());
 
-// POST /users/login {email, password}
+/*
+    USER
+*/
+
+app.delete('/users/me/token', authenticate, (req, res) => {
+    // remove user token
+    req.user.removeToken(req.token).then(
+        () => res.status(200).send(), 
+        () => res.status(400).send()
+    );
+});
+
+
 app.post('/users/login', (req, res) => {
     var {email, password} = req.body;
 
@@ -43,9 +55,6 @@ app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user);
 });
 
-/*
-    USER
-*/
 app.post('/users', (req, res) => {
     var userData = _.pick(req.body, ['email', 'password']);
     var user = new User(userData);

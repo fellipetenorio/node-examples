@@ -33,14 +33,14 @@ const usersDummy = [
 ];
 
 const populateTodos = done => {
-    return Todo.remove({})
+    return Todo.deleteMany({})
     .then(() => {
         return Todo.insertMany(todosDummy).then(docs => docs);
     });
 };
 
 const populateUsers = done => {
-    return User.remove({}).then(() => {
+    return User.deleteMany({}).then(() => {
         var userOne = new User(usersDummy[0]).save();
         var userTwo = new User(usersDummy[1]).save();
 
