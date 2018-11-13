@@ -380,22 +380,30 @@ describe('GET /todos', () => {
 
 describe('POST /todos', () => {
     it('should create a new todo', done => {
-        var text = 'Test todo text';
+        var text = 'Test todo text from User One';
+        var token = usersDummy[0].tokens[0].token;
         request(app)
             .post('/todos')
+            .set('x-auth', token)
             .send({text})
             .expect(200)
             .expect(res => {
                 expect(res.body.text).toBe(text);
+                expect(res.body._creator).toBe(usersDummy[0]._id.toHexString());
             })
             .end((err, res) => {
                 if(err)
                     return done(err);
-                Todo.find().then(todos => {
-                    expect(todos.length).toBe(todosDummy.length+1);
-                    expect(todos[todosDummy.length].text).toBe(text);
-                    done();
-                }).catch(e => done(e));
+                Todo.findById(res.body._id).then(todo => {
+                    expect(todo.text).toBe(text);
+                    expect(todo._creator.toHexString()).toBe(usersDummy[0]._id.toHexString());
+                }).then(
+                    Todo.find().then(todos => {
+                        expect(todos.length).toBe(todosDummy.length+1);
+                        expect(todos[todosDummy.length].text).toBe(text);
+                        done();
+                    })
+                ).catch(e => done(e));
 
             });
     });

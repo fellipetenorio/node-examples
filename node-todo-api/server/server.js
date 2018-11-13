@@ -68,6 +68,7 @@ app.post('/users', (req, res) => {
         res.status(400).send({error});
     });
 });
+
 /*
     TODO
 */
@@ -123,9 +124,10 @@ app.get('/todos', (req, res) => {
 
 });
 
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
     var newTodo = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        _creator: req.user._id
     });
     newTodo.save().then(r =>
         res.send(r),
