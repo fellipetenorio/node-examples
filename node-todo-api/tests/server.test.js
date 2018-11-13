@@ -25,7 +25,7 @@ beforeEach(done => {
 
 describe('POST /users/login', () => {
     it('should login user and return x-auth', done => {
-        var body = _.pick(usersDummy[0], ['email', 'password']);
+        var body = _.pick(usersDummy[1], ['email', 'password']);
         request(app)
             .post('/users/login')
             .send(body)
@@ -33,18 +33,37 @@ describe('POST /users/login', () => {
             .expect(res => {
                 // expect(res.body._id).toBe(usersDummyDoc[0]._id.toHexString());
                 expect(res.body.email).toBe(body.email);
-                expect(res.header['x-auth']).toBeTruthy();
+                expect(res.headers['x-auth']).toBeTruthy();
             })
-            .end(done);
+            .end((err, res) => {
+                if(err) return done(err);
+
+                User.findById(usersDummy[1]._id).then(user => {
+                    expect(user.tokens[0].access).toBe('auth');
+                    expect(user.tokens[0].token).toBe(res.headers['x-auth']);
+                    done();
+                }).catch(e => done(e));
+            });
     });
-    it('should rejct invalid login', done => {
-        var body = _.pick(usersDummy[0], ['email', 'password']);
-        body.password = 'invalidPass';
+    it('should reject invalid login', done => {
+        var body = _.pick(usersDummy[1], ['email', 'password']);
+        body.password = body.password+'1';
+
         request(app)
             .post('/users/login')
             .send(body)
             .expect(401)
-            .end(done);
+            .expect(res => {
+                expect(res.headers['x-auth']).not.toBeTruthy()
+            })
+            .end((err, res) => {
+                if(err) return done(err);
+
+                User.findById(usersDummy[1]._id).then(user => {
+                    expect(user.tokens.length).toBe(0);
+                    done();
+                }).catch(e => done(e));
+            });
     });
 });
 
