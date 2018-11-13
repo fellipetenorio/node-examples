@@ -156,17 +156,6 @@ describe('POST /users', () => {
             .expect(400)
             .end(done);
     });
-    // it('should complain about bad password', done => {
-    //     var invalidUser = {
-    //         email: 'valid@email.com',
-    //         password: '12345' // at least 6
-    //     };
-    //     request(app)
-    //         .post('/users')
-    //         .send(invalidUser)
-    //         .expect(400)
-    //         .end(done);
-    // });
 });
 
 describe('GET /users/me', () => {
@@ -291,8 +280,10 @@ describe('PATH /todos/:id', () => {
 describe('DELETE /todos/:id', () => {
     it('should delete todo', done => {
         var mId = todosDummyDoc[0]._id.toHexString();
+        var token = usersDummy[0].tokens[0].token;
         request(app)
             .delete(`/todos/${mId}`)
+            .set('x-auth', token)
             .expect(200)
             .expect(res => {
                 expect(res.body.todo._id).toBe(todosDummyDoc[0]._id.toHexString());
@@ -309,43 +300,80 @@ describe('DELETE /todos/:id', () => {
 
     it('should be null for non existent todo, but valid id', done => {
         var validButNonUsedId = new ObjectID().toHexString();
+        var token = usersDummy[0].tokens[0].token;
         request(app)
         .delete(`/todos/${validButNonUsedId}`)
-        .expect(200)
-        .expect(res => {
-            expect(res.body.todo).toBe(null);
-        })
-        .end(done);
+        .set('x-auth', token)
+        .expect(400)
+        .end((err, res) => {
+            Todo.find({
+                _creator: usersDummy[0]._id
+            }).then(todos => {
+                expect(todos.length).toBe(1);
+                done();
+            }).catch(e => done(e));
+        });
     });
 
     it('should error on invalid id', done => {
         var invalidId = '123';
+        var token = usersDummy[0].tokens[0].token;
         request(app)
         .delete(`/todos/${invalidId}`)
+        .set('x-auth', token)
         .expect(400)
         .expect(res => {
             expect(res.body.message).toBe('invalid id');
             expect(res.body.todo).toBe(undefined);
         })
-        .end(done);
+        .end((err, res) => {
+            Todo.find({
+                _creator: usersDummy[0]._id
+            }).then(todos => {
+                expect(todos.length).toBe(1);
+                done();
+            }).catch(e => done(e));
+        });
+    });
+    it('should return bad request for invalid token', done => {
+        var invalidId = '123';
+        var token = usersDummy[0].tokens[0].token+'1';
+        request(app)
+        .delete(`/todos/${invalidId}`)
+        .set('x-auth', token)
+        .expect(400)
+        .end((err, res) => {
+            Todo.find({
+                _creator: usersDummy[0]._id
+            }).then(todos => {
+                expect(todos.length).toBe(1);
+                done();
+            }).catch(e => done(e));
+        });
     });
 });
 
 describe('GET /todos/:id', () => {
-    it('should find todo', done => {
+    it('should find todo of the user', done => {
+        var token = usersDummy[0].tokens[0].token;
         request(app)
             .get(`/todos/${todosDummyDoc[0]._id.toHexString()}`)
+            .set('x-auth', token)
             .expect(200)
             .expect(res => {
                 expect(res.body.todo.text).toBe(todosDummy[0].text);
+                expect(res.body.todo._creator).toBe(usersDummy[0]._id.toHexString());
             })
             .end(done);
     });
 
     it('should find any', done => {
         var validButNonUsedId = new ObjectID().toHexString();
+        var token = usersDummy[0].tokens[0].token;
+        
         request(app)
             .get(`/todos/${validButNonUsedId}`)
+            .set('x-auth', token)
             .expect(200)
             .expect(res => {
                 expect(res.body.todo).toBeNull();
@@ -355,11 +383,28 @@ describe('GET /todos/:id', () => {
     
     it('should error on invalid ObjectId', done => {
         var validButNonUsedId = '5be872d137d4611d56656d4d1';
+        var token = usersDummy[0].tokens[0].token;
+
         request(app)
             .get(`/todos/${validButNonUsedId}`)
+            .set('x-auth', token)
             .expect(400)
             .expect(res => {
                 expect(res.body.message).toBe('invalid object id');
+            })
+            .end(done);
+    });
+
+    it('should return empty when retrieving todo from other user', done => {
+        var todoId = todosDummy[1]._id.toHexString();
+        var token = usersDummy[0].tokens[0].token;
+
+        request(app)
+            .get(`/todos/${todoId}`)
+            .set('x-auth', token)
+            .expect(200)
+            .expect(res => {
+                expect(res.body.todo).toBe(null);
             })
             .end(done);
     });

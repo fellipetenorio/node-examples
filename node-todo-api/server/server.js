@@ -98,17 +98,17 @@ app.patch('/todos/:id', (req, res) => {
 });
 
 // delete
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
     if (!ObjectID.isValid(id))
         return res.status(400).send({
             message: 'invalid id'
         });
 
-    return Todo.findByIdAndDelete(id)
-        .then(todo => res.send({ todo }), err => {
-            res.status(500).send(err);
-        })
+    // verify ownership
+    return Todo.findByIdAndCreatorAndDelete(id, req.user._id)
+        .then(todo => res.send({ todo }))
+        .catch(e => res.status(400).send({e}));
 });
 
 app.get('/todos', authenticate, (req, res) => {
@@ -138,8 +138,9 @@ app.post('/todos', authenticate, (req, res) => {
 });
 
 // GET user by id
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
     var todoId = req.params.id;
+    
     // should not acc
     if (!ObjectID.isValid(todoId)) {
         return res.status(400).send({
@@ -147,6 +148,9 @@ app.get('/todos/:id', (req, res) => {
         });
     }
     Todo.findById(todoId).then(todo => {
+        if(!todo || todo._creator.toHexString() !== req.user._id.toHexString())
+            return res.send({todo:null});
+
         return res.send({
             todo
         });
