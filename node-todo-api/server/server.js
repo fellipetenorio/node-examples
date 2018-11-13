@@ -111,16 +111,17 @@ app.delete('/todos/:id', (req, res) => {
         })
 });
 
-app.get('/todos', (req, res) => {
+app.get('/todos', authenticate, (req, res) => {
     console.log('list all todos');
-    Todo.find()
-        .then(todos => {
-            res.send({
-                todos
-            });
-        }, e => {
-            res.status(400).send(e);
-        })
+    Todo.find({
+        _creator: req.user._id
+    }).then(todos => {
+        res.send({
+            todos
+        });
+    }, e => {
+        res.status(400).send(e);
+    })
 
 });
 

@@ -366,12 +366,14 @@ describe('GET /todos/:id', () => {
 });
 
 describe('GET /todos', () => {
-    it('should list two todos', done => {
+    it('should list todos only for the user', done => {
+        var token = usersDummy[0].tokens[0].token;
         request(app)
             .get('/todos')
+            .set('x-auth', token)
             .expect(200)
             .expect(res => {
-                expect(res.body.todos.length).toBe(todosDummy.length);
+                expect(res.body.todos.length).toBe(1);
                 expect(res.body.todos[0].text).toBe(todosDummy[0].text);
             })
             .end(done);
