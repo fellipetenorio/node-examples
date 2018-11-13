@@ -1,9 +1,11 @@
 const expect = require('expect');
 const request = require('supertest');
 var {ObjectID} = require('mongodb');
+const _ = require('lodash');
 
 const {app} = require('./../server/server');
 const {Todo} = require('./../server/models/todo');
+const {User} = require('./../server/models/user');
 const {todosDummy, populateTodos, usersDummy, populateUsers} = require('./seed/seed');
 var todosDummyDoc;
 var usersDummyDoc;
@@ -18,6 +20,66 @@ beforeEach(done => {
     populateTodos(done).then(docs => {
         todosDummyDoc = docs;
         done();
+    });
+});
+
+describe('POST /users', () => {
+    it('should create a user with x-auth valid signature header', done => {
+        var validUser = {
+            email: 'brandNew@email.com',
+            password: 'newValidPassword'
+        };
+        request(app)
+            .post('/users')
+            .send(validUser)
+            .expect(200)
+            .expect(res => {
+                expect(res.header['x-auth']).toBeTruthy();
+                expect(res.body._id).toBeTruthy();
+                expect(res.body.email).toBe(validUser.email);
+            })
+            .end(done);
+    });
+    it('should complain about an already registered email', done => {
+        var validUser = _.pick(usersDummy[0], ['email', 'password']);
+        request(app)
+            .post('/users')
+            .send(validUser)
+            .expect(400)
+            .end(done);
+    });
+    it('should complain about invalid email', done => {
+        var invalidUser = {
+            email: 'invalidemail.com',
+            password: 'newValidPassword'
+        };
+        request(app)
+            .post('/users')
+            .send(invalidUser)
+            .expect(400)
+            .end(done);
+    });
+    it('should complain about empty password', done => {
+        var invalidUser = {
+            email: 'valid@email.com',
+            password: ''
+        };
+        request(app)
+            .post('/users')
+            .send(invalidUser)
+            .expect(400)
+            .end(done);
+    });
+    it('should complain about abd password', done => {
+        var invalidUser = {
+            email: 'valid@email.com',
+            password: '12345' // at least 6
+        };
+        request(app)
+            .post('/users')
+            .send(invalidUser)
+            .expect(400)
+            .end(done);
     });
 });
 
