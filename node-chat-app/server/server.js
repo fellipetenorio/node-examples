@@ -20,10 +20,13 @@ io.on('connection', socket => {
     // notify everybody else about this connection
     socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
-    socket.on('createMessage', message => {
+    socket.on('createMessage', (message, callback) => {
         console.log(message);
         // emit for all live connections
         io.emit('newMessage', generateMessage(message.from, message.text));
+        // acknowledgement about the message (callback to run in client)
+        // console.log(callback);
+        callback(true);
     });
 
     socket.on('disconnect', () => {
