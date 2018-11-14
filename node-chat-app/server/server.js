@@ -2,6 +2,7 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
+const {generateMessage} = require('./utils/message');
 
 const publicPath = path.join(__dirname, '..', 'public');
 var app = express();
@@ -14,12 +15,16 @@ app.use(express.static(publicPath));
 io.on('connection', socket => {
     console.log('new user connected');
 
-    socket.emit('newEmail', {
-        from: 'from@email.com',
-        to: 'to@email.com'
-    });
+    // Welcome connected user
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome!'));
+    // notify everybody else about this connection
+    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
-    socket.on('createEmail', newEmail => console.log('newEmail', newEmail));
+    socket.on('createMessage', message => {
+        console.log(message);
+        // emit for all live connections
+        io.emit('newMessage', generateMessage(message.from, message.text));
+    });
 
     socket.on('disconnect', () => {
         console.log('client disconnect');
