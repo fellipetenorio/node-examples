@@ -11,14 +11,20 @@ socket.on('connect', function() {
 });
 
 socket.on('newLocation', function(location){
-    var a = $('<a></a>')
-            .attr('target', '_blank')
-            .attr('href', `https://google.com/maps?q=${location.text.latitude},${location.text.longitude}`)
-            .html(`${location.text.latitude},${location.text.longitude}`);
-    
-    var li = $('<li></li>');
-    li.html(location.from+': ').append(a);
-    $('#messages').append(li);
+    var template = $('#message-template').html();
+    var formattedTime = moment(location.createdAt).format('h:mm a');
+    var html = Mustache.render(template, {
+        text: 'New User location: ',
+        from: location.from,
+        createdAt: formattedTime,
+        link: true,
+        url: `https://google.com/maps?q=${location.text.latitude},${location.text.longitude}`,
+        linkText: 'Maps'
+    });
+    $('#messages').append(html);
+    // var li = $('<li></li>');
+    // li.html(location.from+': ').append(a);
+    // $('#messages').append(li);
 });
 
 socket.on('disconnect', function() {
@@ -26,10 +32,19 @@ socket.on('disconnect', function() {
 });
 
 socket.on('newMessage', function(data){
+    var template = $('#message-template').html();
     var formattedTime = moment(data.createdAt).format('h:mm a');
-    var li = $('<li></li>'); 
-    li.html(formattedTime+' '+data.from+': '+data.text);
-    $('#messages').append(li);
+    var html = Mustache.render(template, {
+        text: data.text,
+        from: data.from,
+        createdAt: formattedTime
+    });
+    $('#messages').append(html);
+
+    // var formattedTime = moment(data.createdAt).format('h:mm a');
+    // var li = $('<li></li>'); 
+    // li.html(formattedTime+' '+data.from+': '+data.text);
+    // $('#messages').append(li);
 });
 
  $(document).ready(function(){
