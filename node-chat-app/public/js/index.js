@@ -11,7 +11,6 @@ socket.on('connect', function() {
 });
 
 socket.on('newLocation', function(location){
-    console.log('New Location event', location);
     var a = $('<a></a>')
             .attr('target', '_blank')
             .attr('href', `https://google.com/maps?q=${location.text.latitude},${location.text.longitude}`)
@@ -27,9 +26,9 @@ socket.on('disconnect', function() {
 });
 
 socket.on('newMessage', function(data){
-    console.log('New Message', data);
-    var li = $('<li></li>');
-    li.html(data.from+': '+data.text);
+    var formattedTime = moment(data.createdAt).format('h:mm a');
+    var li = $('<li></li>'); 
+    li.html(formattedTime+' '+data.from+': '+data.text);
     $('#messages').append(li);
 });
 
@@ -40,7 +39,10 @@ socket.on('newMessage', function(data){
             return alert('Geolocation not supported');
         }
 
+        $locationButton.attr('disabled', 'disabled').text('Sending location...');
+
         navigator.geolocation.getCurrentPosition(function(position) {
+            $locationButton.removeAttr('disabled').text('Send Location');
             console.log(position);
             var lat= position.coords.latitude;
             var lng = position.coords.longitude;
@@ -50,6 +52,7 @@ socket.on('newMessage', function(data){
             });
         }, function () {
             alert('Unable to fetch location');
+            $locationButton.removeAttr('disabled').text('Send Location');
         })
      });
 
