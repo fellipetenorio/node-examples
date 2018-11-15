@@ -22,9 +22,6 @@ socket.on('newLocation', function(location){
         linkText: 'Maps'
     });
     $('#messages').append(html);
-    // var li = $('<li></li>');
-    // li.html(location.from+': ').append(a);
-    // $('#messages').append(li);
 });
 
 socket.on('disconnect', function() {
