@@ -29,6 +29,11 @@ io.on('connection', socket => {
         callback(true);
     });
 
+    socket.on('createLocationMessage', location => {
+        console.log('createLocationMessage', location);
+        io.emit('newLocation', generateMessage('Admin', location));
+    });
+
     socket.on('disconnect', () => {
         console.log('client disconnect');
     });

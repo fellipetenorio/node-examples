@@ -13,3 +13,17 @@ describe('generateMessage', () => {
         done();
     })
 });
+
+describe('generateLocationMessage', () => {
+    it('should generate correct location object', done => {
+        var data = {
+            latitude: -8.1199766,
+            longitude: -34.8989622
+        };
+        var message = generateMessage('Admin', data);
+        console.log(message);
+        expect(message.text.latitude).toBe(data.latitude);
+        expect(message.text.longitude).toBe(data.longitude);
+        done();
+    })
+});

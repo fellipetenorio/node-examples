@@ -10,6 +10,18 @@ socket.on('connect', function() {
     // });
 });
 
+socket.on('newLocation', function(location){
+    console.log('New Location event', location);
+    var a = $('<a></a>')
+            .attr('target', '_blank')
+            .attr('href', `https://google.com/maps?q=${location.text.latitude},${location.text.longitude}`)
+            .html(`${location.text.latitude},${location.text.longitude}`);
+    
+    var li = $('<li></li>');
+    li.html(location.from+': ').append(a);
+    $('#messages').append(li);
+});
+
 socket.on('disconnect', function() {
     console.log('disconnected from the server');
 });
@@ -20,8 +32,29 @@ socket.on('newMessage', function(data){
     li.html(data.from+': '+data.text);
     $('#messages').append(li);
 });
+
  $(document).ready(function(){
-     $('#message-form').submit(function (){
+     var $locationButton = $('#send-location');
+     $locationButton.on('click', function(e) {
+        if(!navigator.geolocation) {
+            return alert('Geolocation not supported');
+        }
+
+        navigator.geolocation.getCurrentPosition(function(position) {
+            console.log(position);
+            var lat= position.coords.latitude;
+            var lng = position.coords.longitude;
+            socket.emit('createLocationMessage', {
+                latitude: lat,
+                longitude: lng
+            });
+        }, function () {
+            alert('Unable to fetch location');
+        })
+     });
+
+
+    $('#message-form').submit(function (){
         var $textInp = $('input#message'); 
         var text = $textInp.val();
 
@@ -33,5 +66,5 @@ socket.on('newMessage', function(data){
                 $textInp.val('');
         });
         return false;
-     });
+    });
  });
