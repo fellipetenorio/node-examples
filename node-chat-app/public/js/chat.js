@@ -17,8 +17,15 @@ function scrollToBottom() {
 }
 
 socket.on('connect', function() {
-    console.log('connected to the server');
+    var params = $.deparam(window.location.search);
+    socket.emit('join', params, function(err) {
+        if(err) {
+            alert(err);
+            return window.location.href = '/';
+        }
 
+        
+    });
     // socket.emit('createMessage',{
     //     from: 'Tenorio',
     //     text: 'my message'
