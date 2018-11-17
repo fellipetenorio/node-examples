@@ -1,4 +1,21 @@
 var socket = io();
+var $messages = $('#messages');
+function scrollToBottom() {
+    //var messagesSel = '#messages';
+    var newMessage = $messages.children('li:last-child');
+
+    var clientHeight = $messages.prop('clientHeight');
+    var scrollTop = $messages.prop('scrollTop');
+    var scrollHeight = $messages.prop('scrollHeight');
+    var newMessageHeight = $messages.innerHeight();
+    var lastMessageHeight = newMessage.prev().innerHeight() | 0;
+
+    //console.log(clientHeight, scrollTop, newMessageHeight, lastMessageHeight, scrollHeight);
+    if(clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+        $messages.scrollTop(scrollHeight);
+    }
+}
+
 socket.on('connect', function() {
     console.log('connected to the server');
 
@@ -21,7 +38,8 @@ socket.on('newLocation', function(location){
         url: `https://google.com/maps?q=${location.text.latitude},${location.text.longitude}`,
         linkText: 'Maps'
     });
-    $('#messages').append(html);
+    $messages.append(html);
+    scrollToBottom();
 });
 
 socket.on('disconnect', function() {
@@ -36,8 +54,8 @@ socket.on('newMessage', function(data){
         from: data.from,
         createdAt: formattedTime
     });
-    $('#messages').append(html);
-
+    $messages.append(html);
+    scrollToBottom();
     // var formattedTime = moment(data.createdAt).format('h:mm a');
     // var li = $('<li></li>'); 
     // li.html(formattedTime+' '+data.from+': '+data.text);

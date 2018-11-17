@@ -39,6 +39,11 @@ io.on('connection', socket => {
     });
 });
 
+app.get('/message', (req, res) => {
+    io.emit('newMessage', generateMessage('site', 'Hello!'));
+    res.send('asdf');
+})
+
 server.listen(port, () => {
     console.log(`Started on port ${port}`);
 });
