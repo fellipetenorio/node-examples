@@ -1,0 +1,15 @@
+{
+  "name": "async-wait",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app-promises.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}
