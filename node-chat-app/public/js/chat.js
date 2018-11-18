@@ -40,7 +40,7 @@ socket.on('newLocation', function(location){
     var template = $('#message-template').html();
     var formattedTime = moment(location.createdAt).format('h:mm a');
     var html = Mustache.render(template, {
-        text: 'New User location: ',
+        text: `${location.from} location: `,
         from: location.from,
         createdAt: formattedTime,
         link: true,

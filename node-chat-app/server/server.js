@@ -55,7 +55,9 @@ io.on('connection', socket => {
 
     socket.on('createLocationMessage', location => {
         console.log('createLocationMessage', location);
-        io.emit('newLocation', generateMessage('Admin', location));
+        var user = users.getUser(socket.id);
+        if(user)
+            io.to(user.room).emit('newLocation', generateMessage(user.name, location));
     });
 
     socket.on('disconnect', () => {
