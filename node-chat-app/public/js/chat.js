@@ -1,5 +1,7 @@
 var socket = io();
 var $messages = $('#messages');
+var $users = $('#users');
+
 function scrollToBottom() {
     //var messagesSel = '#messages';
     var newMessage = $messages.children('li:last-child');
@@ -53,6 +55,14 @@ socket.on('disconnect', function() {
     console.log('disconnected from the server');
 });
 
+socket.on('updateUserList', function(users) {
+    var ol = $('<ol></ol>');
+    users.forEach(function (user) {
+        ol.append($('<li></li>').text(user));
+    });
+    $users.html(ol);
+})
+
 socket.on('newMessage', function(data){
     var template = $('#message-template').html();
     var formattedTime = moment(data.createdAt).format('h:mm a');
@@ -99,7 +109,7 @@ socket.on('newMessage', function(data){
         var text = $textInp.val();
 
         socket.emit('createMessage', {
-            from: 'Mary',
+            from: '',
             text: text
         }, function (data) {
             if(data === true)

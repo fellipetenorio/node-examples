@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 // ES6 class
 class Users {
     constructor() {
@@ -9,9 +11,19 @@ class Users {
         this.users.push(user);
         return user;
     }
-}
 
-var mUsers = new Users();
-mUsers.addUser(1, 'Fellipe', 'test');
+    removeUser(id) {
+        return _.remove(this.users, user => user.id === id)[0];
+    }
+
+    getUser(id) {
+        return this.users.find(user => user.id === id);
+    }
+
+    getUserList(room) {
+        var users = this.users.filter(user => user.room === room);
+        return users.map(user => user.name);
+    }
+}
 
 module.exports = {Users};
