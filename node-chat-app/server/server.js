@@ -20,13 +20,21 @@ io.on('connection', socket => {
         console.log('new attemp to join', message);
         if(!validation.isRealString(message.name) || !validation.isRealString(message.room))
             return callback('invalid name or room');
+        socket.join(message.room);
+        // socket.leave to leave the room
+        // io.emit => to all connected client
+        // socker.broadcast.emit to all clients then this
+        // io.to(message.room).emit => emit event to specific room
+        // socket.broadcast.to(message.room).emit => to all clients whitin the room except the current user
+
+        // // Welcome connected user
+        socket.emit('newMessage', generateMessage('Admin', 'Welcome!'));
+        // // notify everybody else about this connection
+        // socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
+        // notify only the room
+        socket.broadcast.to(message.room).emit('newMessage', generateMessage('Admin', `${message.name} joined the rrom!`));
         callback();
     });
-
-    // Welcome connected user
-    socket.emit('newMessage', generateMessage('Admin', 'Welcome!'));
-    // notify everybody else about this connection
-    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
     socket.on('createMessage', (message, callback) => {
         console.log(message);
