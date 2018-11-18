@@ -57,9 +57,9 @@ app.get('/users/me', authenticate, (req, res) => {
 
 app.post('/users', async (req, res) => {
     var userData = _.pick(req.body, ['email', 'password']);
-    var userObj = new User(userData);
+    var user = new User(userData);
     try {
-        const user = await userObj.save(userObj);
+        await user.save(user);
         const token = await user.generateAuthToken();
         res.header('x-auth', token).send(user);
     } catch (e) {
